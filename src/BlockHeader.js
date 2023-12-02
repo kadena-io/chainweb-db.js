@@ -47,7 +47,7 @@ class ChainwebVersion {
     }
 
     toJSON () {
-        return this.toString();
+        return this.string;
     }
 
     static get Mainnet01 () { return new ChainwebVersion("mainnet01"); }
