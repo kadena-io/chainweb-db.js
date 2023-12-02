@@ -46,6 +46,25 @@ async function sleep(ms) {
     return new Promise((resolve, _reject) => setTimeout(resolve,ms));
 }
 
+/* Print a BigInt, Number, or Buffer as hexadecimal string with padding and
+ * 0x prefix.
+ *
+ * @param {*} - BigInt, Number, or Buffer
+ * @param {Number} - optional padding
+ * @returns {string} hexadecimal encoding of the input as string
+ */
+function toHex(i, p = 0) {
+  if (typeof i === 'bigint') {
+    return '0x'.concat(i.toString(16).padStart(p, '0'));
+  } else if (typeof i === 'number') {
+    return '0x'.concat(i.toString('hex').padStart(p, '0'));
+  } else if (i instanceof Buffer) {
+    return '0x'.concat(i.toString('hex').padStart(p, '0'));
+  } else {
+    throw Error(`numberToHex: invalid argument of type ${typeof i}`);
+  }
+}
+
 /* ************************************************************************** */
 /* Iterator Utils */
 
@@ -451,6 +470,7 @@ module.exports = {
     to64: to64,
     to64Json: to64Json,
     sleep: sleep,
+    toHex: toHex,
 
     /* iterators */
     iter: {

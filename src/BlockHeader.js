@@ -1,4 +1,4 @@
-const {from64, from64Json} = require("./Utils");
+const {from64, from64Json, toHex} = require("./Utils");
 
 /* ************************************************************************** */
 
@@ -46,6 +46,10 @@ class ChainwebVersion {
         }
     }
 
+    toJSON () {
+        return this.toString();
+    }
+
     static get Mainnet01 () { return new ChainwebVersion("mainnet01"); }
     static get Testnet04 () { return new ChainwebVersion("testnet04"); }
     static get Development () { return new ChainwebVersion("development"); }
@@ -80,6 +84,10 @@ class SHA256HashView {
 
     static get NullHash () {
         return new SHA256HashView(Buffer.alloc(32, 0));
+    }
+
+    toJSON () {
+        return this.buffer.toString('base64url');
     }
 }
 
@@ -137,6 +145,10 @@ class PoWHashView {
 
     static get NullHash () {
         return new SHA256HashView(Buffer.alloc(32, 0));
+    }
+
+    toJSON () {
+      return toHex(this.value, 32);
     }
 }
 
@@ -272,17 +284,17 @@ class HeaderView {
 
     get value () {
         return {
-            flags: this.flags,
-            time: this.time,
+            flags: toHex(this.flags, 16),
+            time: Number(this.time),
             parentHash: this.parentHash,
             adjacents: this.adjacents,
             target: this.target,
             payloadHash: this.payloadHash,
             weight: this.weight,
-            height: this.height,
+            height: Number(this.height),
             version: this.version,
-            epochStart: this.epochStart,
-            nonce: this.nonce,
+            epochStart: Number(this.epochStart),
+            nonce: toHex(this.nonce, 16),
             hash: this.hash,
         };
     }
@@ -307,6 +319,10 @@ class HeaderView {
 
     get [Symbol.toStringTag] () {
         return this.value;
+    }
+
+    toJSON () {
+      return this.value;
     }
 }
 
