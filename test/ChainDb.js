@@ -49,7 +49,7 @@ const tables = [
 const someKeyCount = 5;
 
 beforeAll(async () => {
-    await db.open();
+    await db.open({ readOnly: true });
     console.log('db opened')
     await Promise.all(tables.map(async t => {
         t.someKeys = await someKeys(t.table, someKeyCount);
