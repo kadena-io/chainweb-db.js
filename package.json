@@ -9,12 +9,14 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^7.4.3",
+    "better-sqlite3": "^9.0.0",
     "chainweb": "^2.0.0",
     "rocksdb": "^5.2.1",
-    "tree-range-set": "^1.0.4"
+    "tree-range-set": "^1.0.4",
+    "commander": "^11.1.0",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
-    "jest": "^27.0.6"
+    "jest": "^29.7.0"
   }
 }
