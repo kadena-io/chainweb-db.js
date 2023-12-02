@@ -12,6 +12,9 @@ const { SHA256Hash } = require("../src/BlockHeader");
 
 const { createLogger, transports } = require('winston');
 
+/* ************************************************************************** */
+/* Logger */
+
 const logger = createLogger({
   level: 'warn',
   transports: [new transports.Console()],
@@ -30,6 +33,12 @@ async function withReadOnlyDb (dbPath, fn) {
       await db.close();
       logger.debug("db closed")
   }
+}
+
+/* By default Stringify BigInt values as strings
+ */
+BigInt.prototype.toJSON = function() {
+    return this.toString()
 }
 
 /* ************************************************************************** */
@@ -53,7 +62,7 @@ async function headers (dbPath, chain, start, count) {
       it.seek({height: start, hash: null});
         const it2 = asyncIter.take(it, count);
         for await (let x of it2) {
-          console.log(`${JSON.stringify(x.value)}`);
+          console.log(`${JSON.stringify(x)}`);
         }
     } finally {
       it.end();
