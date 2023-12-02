@@ -290,6 +290,7 @@ class HeaderView {
             adjacents: this.adjacents,
             target: this.target,
             payloadHash: this.payloadHash,
+            chain: Number(this.chain),
             weight: this.weight,
             height: Number(this.height),
             version: this.version,
