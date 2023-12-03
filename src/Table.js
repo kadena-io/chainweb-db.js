@@ -13,7 +13,7 @@ class Db {
     constructor(path, namespace) {
         this.rocksDb = leveldown(path);
         this.namespace = namespace ?? "";
-        
+
         this.gte = `${this.namespace}-`;
         this.lt = `${this.namespace}.`;
         this.gteBuf = Buffer.from(this.gte, 'ascii');
@@ -86,7 +86,7 @@ class AbstractTable {
         this.name = name;
     }
 
-    /* Iterator 
+    /* Iterator
      *
      * @param {object} opts - options accepted by rocks db iterators. This include 'reverse', and 'limit'
      * @return iterator for the table. The caller must call `end()` on the result when done using it.
@@ -95,7 +95,7 @@ class AbstractTable {
         throw "iterator not implemented in AbstractTable"
     }
 
-    /* Iterator 
+    /* Iterator
      *
      * @param {object} opts - options accepted by rocks db iterators. This include 'reverse', and 'limit'
      * @return iterator for the table. The caller must call `end()` on the result when done using it.
@@ -209,8 +209,8 @@ class Table extends AbstractTable {
         return value;
     }
 
-    /* Iterator 
-     * 
+    /* Iterator
+     *
      * @param {object} opts - options accepted by rocks db iterators. This include 'reverse', and 'limit'.
      * @return {Promise<object>} A new TableIterator object.
      */
@@ -218,7 +218,7 @@ class Table extends AbstractTable {
         return new TableIterator(this, opts);
     }
 
-    /* Get 
+    /* Get
      *
      * @async
      * @param {Buffer} key - the lookup key.
@@ -273,7 +273,7 @@ class Table extends AbstractTable {
         });
     }
 
-    /* This triggers background compaction. It doesn't seem to await 
+    /* This triggers background compaction. It doesn't seem to await
      * finalization of compaction.
      */
     compact (start, end) {
@@ -308,7 +308,7 @@ class AbstractTableIterator {
     async next () {
         throw "next not implemented in AbstractTableIterator"
     }
-    
+
     async nextKey () {
         const x = await this.next();
         x.value = x.value?.key;
@@ -430,7 +430,7 @@ class IntKeyIntValueTable extends Table {
 /* Composite Tables */
 
 /* Composite Tables represent a merged view of more than a single table.
- * 
+ *
  * Implements the same interface as Table, though it doesn't extend it.
  */
 class CompositeTable extends AbstractTable {
@@ -450,8 +450,8 @@ class CompositeTable extends AbstractTable {
     /* Given the component keys, returns the composite key.
      *
      * The base implementation is the identity function that returns the
-     * composite key. 
-     * 
+     * composite key.
+     *
      * @param dbKeys - associative array that maps component tables names the respective keys
      * @returns associative array that maps component table names to the respective keys
      */
@@ -462,26 +462,26 @@ class CompositeTable extends AbstractTable {
      * Component keys can depend on values from other components. This allows
      * creating denormalized views of normalized database layouts with foreign
      * key constraints.
-     * 
+     *
      * To supports keys-value dependencies the implementation can return partial
      * results and has access to a partial collection of component values for
      * the given key. The collection is represented as an associative array that
      * maps component table names the respective values.
-     * 
+     *
      * If a key depends on a value, an implementations of this method must satisfy
-     * the following requirements: 
-     * 
+     * the following requirements:
+     *
      * 1. There are no cyclic dependencies betweeen keys and values.
      * 2. Each time the method is called at least one additional key is resolved until
      *    all keys are resolved.
      * 3. When all values are known, the method returns all keys.
-     * 
+     *
      * Failing to do so may result in infinite loops, or failing `put` operations.
-     * 
-     * The base implementation is the identity functions and assumes that the 
+     *
+     * The base implementation is the identity functions and assumes that the
      * composite key is an associative map from component table names to the
      * respective component keys.
-     * 
+     *
      * @param keys - composite user key, an associative map from component tables names to the respective keys.
      * @param values - associative map of tables names to values for the respective keys. May contain null values.
      * @returns associative map from component tables names to the respective keys.
@@ -489,7 +489,7 @@ class CompositeTable extends AbstractTable {
     dbKey (keys, _values) { return keys; }
 
     /* Compute the composite value from the component values
-     * 
+     *
      * The base implementation is the identity function.
      *
      * @param dbValues - associative map of component tables names to values
@@ -501,7 +501,7 @@ class CompositeTable extends AbstractTable {
      *
      * This is only supported for bidirectional table views that support the
      * `put` method.
-     * 
+     *
      * The base implementation is the identity function.
      *
      * @param dbValues - composite value, associative map of component tables names to values
@@ -545,11 +545,11 @@ class CompositeTable extends AbstractTable {
     };
 
     /* Put a new value
-     * 
+     *
      * This method is supported only for bi-directional views, where it is
      * possible to compute the component values from the composite value.
      */
-    async put (key, value) { 
+    async put (key, value) {
         const dbValues = this.dbValue(value);
         const dbKeys = Object.entries(this.dbKey(key, dbValues));
         return await Promise.all(dbKeys.map(async ([k,v]) => {
@@ -564,13 +564,25 @@ class CompositeTable extends AbstractTable {
     /* this is somewhat inefficient, because the the primary key
      * value will mostly be obtain twice. However, RocksDb caches queries
      * by default, so it's probably fine for most use cases.
-     * 
+     *
      * Otherwise, we could provide a low more level approach that would
      * share some code with the implementation of get.
-     * 
-     */ 
+     *
+     */
     iterator (keyIterator, opts) {
         return new CompositeTableIterator(this, keyIterator, opts)
+    }
+
+    approximateSize (start, end) {
+      const tbls = Object.entries(this.tables);
+      return Promise.all(
+          tbls.map(async ([tblName, tbl]) => {
+              const startKey = start ? start[tblName] : undefined;
+              const endKey = end ? end[tblName] : undefined;
+              const r = await tbl.approximateSize(startKey, endKey);
+              return r
+          })
+      ).then(x => x.reduce((a, b) => a + b, 0));
     }
 }
 
@@ -595,8 +607,8 @@ class CompositeTableIterator extends AbstractTableIterator {
         };
     }
 
-    async seek (key) { 
-        await this.keyIterator.seek(key); 
+    async seek (key) {
+        await this.keyIterator.seek(key);
     }
 }
 
